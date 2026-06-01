@@ -1,9 +1,7 @@
 package albionlens
 
 import (
-	"github.com/AutoDruid/albion-lens/internal/decoders"
-	"github.com/AutoDruid/albion-lens/internal/extractor"
-	"github.com/AutoDruid/albion-lens/models"
+	"github.com/AutoDruid/albion-lens/internal"
 	eventTypes "github.com/AutoDruid/albion-lens/types/events"
 	operationTypes "github.com/AutoDruid/albion-lens/types/operations"
 	"github.com/AutoDruid/photon-parser"
@@ -17,7 +15,7 @@ type Lens struct {
 
 func NewLens() *Lens {
 	l := &Lens{
-		parser:     photon.NewV18(),
+		parser:     photon.NewParserV18(),
 		events:     make(map[eventTypes.EventCode]func([]photon.ParameterV18)),
 		operations: make(map[operationTypes.OperationCode]func([]photon.ParameterV18)),
 	}
@@ -26,60 +24,73 @@ func NewLens() *Lens {
 }
 
 func (l *Lens) Parse(data []byte) error {
-	if _, err := l.parser.ParsePacket(data); err != nil {
+	var session photon.SessionV18
+	if err := l.parser.ParsePacketInto(data, &session); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (l *Lens) startListeners() {
-	l.parser.OnEvent(func(reliable photon.ReliableV18) {
-		op, ok := extractor.Extract(reliable.Parameters)
+
+	l.parser.OnEventData(func(reliable photon.ReliableV18) {
+		op, ok := internal.Extract(reliable.Parameters)
 		if !ok {
 			return
 		}
+		if fn, ok := l.events[eventTypes.EventCode(op.Code)]; ok {
+			fn(reliable.Parameters)
+		}
+	})
 
-		switch op.Kind {
-		case extractor.KindEvent:
-			if fn, ok := l.events[eventTypes.EventCode(op.Code)]; ok {
-				fn(op.Params)
-			}
-		case extractor.KindOperation:
-			if fn, ok := l.operations[operationTypes.OperationCode(op.Code)]; ok {
-				fn(op.Params)
-			}
+	l.parser.OnOperationResponse(func(reliable photon.ReliableV18) {
+		op, ok := internal.Extract(reliable.Parameters)
+		if !ok {
+			return
+		}
+		if fn, ok := l.operations[operationTypes.OperationCode(op.Code)]; ok {
+			fn(reliable.Parameters)
 		}
 	})
 }
 
-func (l *Lens) OnMove(fn func(models.MoveEvent)) {
-	l.operations[operationTypes.Move] = func(params []photon.ParameterV18) {
-		e, ok := decoders.DecodeMove(params)
-		if !ok {
-			return
+type Code interface {
+	eventTypes.EventCode | operationTypes.OperationCode
+}
+
+type Handler[E any, C Code] struct {
+	Code    C
+	Handler func([]photon.ParameterV18) (E, bool)
+}
+
+type EventHandler[E any] = Handler[E, eventTypes.EventCode]
+
+func OnEvent[E any](l *Lens, h EventHandler[E], cb func(E)) {
+	l.events[h.Code] = func(p []photon.ParameterV18) {
+		if e, ok := h.Handler(p); ok {
+			cb(e)
 		}
-		fn(e)
 	}
 }
 
-func (l *Lens) OnUpdateFame(fn func(models.UpdateFameEvent)) {
-	l.events[eventTypes.UpdateFame] = func(params []photon.ParameterV18) {
-		e, ok := decoders.DecodeUpdateFame(params)
-		if !ok {
-			return
+func OnCustomEvent(l *Lens, key eventTypes.EventCode, cb func([]photon.ParameterV18)) {
+	l.events[key] = func(p []photon.ParameterV18) {
+		cb(p)
+	}
+}
+
+type OperationHandler[E any] = Handler[E, operationTypes.OperationCode]
+
+func OnOperation[E any](l *Lens, h OperationHandler[E], cb func(E)) {
+	l.operations[h.Code] = func(p []photon.ParameterV18) {
+		if e, ok := h.Handler(p); ok {
+			cb(e)
 		}
-		fn(e)
 	}
 }
 
-func (l *Lens) OnCustomEvents(eventCode eventTypes.EventCode, fn func([]photon.ParameterV18)) {
-	l.events[eventCode] = func(params []photon.ParameterV18) {
-		fn(params)
-	}
-}
-
-func (l *Lens) OnCustomOperations(operationCode operationTypes.OperationCode, fn func([]photon.ParameterV18)) {
-	l.operations[operationCode] = func(params []photon.ParameterV18) {
-		fn(params)
+func OnCustomOperation(l *Lens, key operationTypes.OperationCode, cb func([]photon.ParameterV18)) {
+	l.operations[key] = func(p []photon.ParameterV18) {
+		cb(p)
 	}
 }

@@ -1,4 +1,4 @@
-package extractor
+package internal
 
 import (
 	"github.com/AutoDruid/photon-parser"

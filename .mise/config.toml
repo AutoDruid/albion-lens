@@ -21,3 +21,7 @@ run = "golangci-lint run ./..."
 [tasks.format]
 description = "Format the code"
 run = "go fmt ./..."
+
+[tasks.generate]
+description = "Generate stringers for the code"
+run = "go generate ./types/events"

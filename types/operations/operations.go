@@ -1,4 +1,4 @@
-package types
+package operations
 
 type OperationCode uint16
 
@@ -25,7 +25,7 @@ const (
 	GetReferralSeasonDetails
 	GetReferralLink
 	GetShopTilesForCategory
-	Move
+	Move //TODO
 	AttackStart
 	CastStart
 	CastCancel
@@ -55,8 +55,8 @@ const (
 	RepairBuildingChangeSettings
 	RepairBuildingTakeMoney
 	ActionBuildingChangeSettings
-	HarvestStart
-	HarvestCancel
+	HarvestStart  //TODO
+	HarvestCancel //TODO
 	TakeSilver
 	ActionOnBuildingStart
 	ActionOnBuildingCancel
@@ -202,8 +202,8 @@ const (
 	StopEmote
 	GetClusterMapInfo
 	AccessRightsChangeSettings
-	Mount
-	MountCancel
+	Mount       //TODO
+	MountCancel //TODO
 	BuyJourney
 	SetSaleStatusForEstate
 	ResolveGuildOrPlayerName
@@ -319,14 +319,14 @@ const (
 	DepositItemToGuildCurrency
 	WithdrawalItemFromGuildCurrency
 	AuctionSellSpecificItemRequest
-	FishingStart
-	FishingCasting
-	FishingCast
-	FishingCatch
-	FishingPull
-	FishingGiveLine
-	FishingFinish
-	FishingCancel
+	FishingStart    //TODO
+	FishingCasting  //TODO
+	FishingCast     //TODO
+	FishingCatch    //TODO
+	FishingPull     //TODO
+	FishingGiveLine //TODO
+	FishingFinish   //TODO
+	FishingCancel   //TODO
 	CreateGuildAccessTag
 	DeleteGuildAccessTag
 	RenameGuildAccessTag
@@ -422,7 +422,7 @@ const (
 	GetPartySmartClusterQueuePriority
 	SetPartySmartClusterQueuePriority
 	ClientAntiAutoClickerInfo
-	ClientBotPatternDetectionInfo
+	ClientBotPatternDetectionInfo //TODO
 	ClientAntiGatherClickerInfo
 	LoadoutCreate
 	LoadoutRead

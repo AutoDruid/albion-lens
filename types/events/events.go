@@ -1,11 +1,12 @@
-package types
+//go:generate stringer -type=EventCode
+package events
 
 type EventCode int
 
 const (
 	Unused EventCode = iota
 	Leave
-	JoinFinished
+	JoinFinished //TODO
 	Move
 	Teleport
 	ChangeEquipment
@@ -62,9 +63,9 @@ const (
 	LaborerObjectInfo
 	LaborerObjectJobInfo
 	MarketPlaceBuildingInfo
-	HarvestStart
-	HarvestCancel
-	HarvestFinished
+	HarvestStart    //TODO
+	HarvestCancel   //TODO
+	HarvestFinished //TODO
 	TakeSilver
 	RemoveSilver
 	ActionOnBuildingStart
@@ -214,9 +215,9 @@ const (
 	LeftChatChannel
 	RemovedChatChannel
 	AccessStatus
-	Mounted
-	MountStart
-	MountCancel
+	Mounted     //TODO
+	MountStart  //TODO
+	MountCancel //TODO
 	NewTravelpoint
 	NewIslandAccessPoint
 	NewExit
